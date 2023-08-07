@@ -21,16 +21,13 @@ void file_to_err(char *file)
 }
 
 /**
- * close_file - closes a file and displays error message if file can't close
+ * close_err - displays error message if file can't close
  * @fd: file descriptor
  */
-void close_file(int fd)
+void close_err(int fd)
 {
-	if (close(fd) == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
-		exit(ERR_FILE_CLOSE);
-	}
+	dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+	exit(ERR_FILE_CLOSE);
 }
 
 /**
@@ -42,8 +39,10 @@ void close_file(int fd)
  */
 int main(int argc, char *argv[])
 {
-	int file_from, file_to;
-	char ch;
+
+	int file_from, file_to, file_from_rd, file_to_wr;
+	char buffer[BUFFER_SIZE];
+	mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 
 	if (argc != 3)
 	{
@@ -55,19 +54,28 @@ int main(int argc, char *argv[])
 	if (argv[2] == NULL)
 		file_to_err(argv[2]);
 	file_from = open(argv[1], O_RDONLY);
-	if (file_from == -1)
+	if (file_from == ERR_FILE)
 		file_from_err(argv[1]);
-	file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (file_to == -1)
+	file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, mode);
+	if (file_to == ERR_FILE)
 		file_to_err(argv[2]);
 
-	while (read(file_from, &ch, 1) == 1)
+	file_from_rd = read(file_from, buffer, BUFFER_SIZE);
+	if (file_from_rd == ERR_FILE)
+		file_from_err(argv[1]);
+	while (file_from_rd > 0)
 	{
-		if (write(file_to, &ch, 1) != 1)
+		file_to_wr = write(file_to, buffer, file_from_rd);
+		if (file_to_wr != file_from_rd)
 			file_to_err(argv[2]);
+		file_from_rd = read(file_from, buffer, BUFFER_SIZE);
+		if (file_from_rd == ERR_FILE)
+			file_from_err(argv[1]);
 	}
 
-	close_file(file_from);
-	close_file(file_to);
+	if (close(file_from) == ERR_FILE)
+		close_err(file_from);
+	if (close(file_to) == ERR_FILE)
+		close_err(file_to);
 	return (0);
 }

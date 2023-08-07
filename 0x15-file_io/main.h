@@ -1,6 +1,14 @@
 #ifndef HEAD_H
 #define HEAD_H
 
+#define ERR_FILE_READ 98
+#define ERR_FILE_WRITE 99
+#define ERR_FILE_CLOSE 100
+#define ERR_USAGE 97
+#define ERR_FILE -1
+#define BUFFER_SIZE 1024
+
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
