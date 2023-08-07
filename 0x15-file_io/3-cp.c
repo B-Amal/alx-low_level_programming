@@ -7,7 +7,7 @@
 void file_from_err(char *file)
 {
 	dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", file);
-	exit(98);
+	exit(ERR_FILE_READ);
 }
 
 /**
@@ -17,7 +17,7 @@ void file_from_err(char *file)
 void file_to_err(char *file)
 {
 	dprintf(STDERR_FILENO, "Error: Can't write to %s\n", file);
-	exit(99);
+	exit(ERR_FILE_WRITE);
 }
 
 /**
@@ -26,13 +26,10 @@ void file_to_err(char *file)
  */
 void close_file(int fd)
 {
-	int closed;
-
-	closed = close(fd);
-	if (closed == -1)
+	if (close(fd) == -1)
 	{
 		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
-		exit(100);
+		exit(ERR_FILE_CLOSE);
 	}
 }
 
@@ -51,7 +48,7 @@ int main(int argc, char *argv[])
 	if (argc != 3)
 	{
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
+		exit(ERR_USAGE);
 	}
 	if (argv[1] == NULL)
 		file_from_err(argv[1]);
